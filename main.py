@@ -41,34 +41,32 @@ async def ping(ctx):
     await embed(ctx, des, color, name)
 
 @bot.command(description='Muestra los comandos del bot')
-async  def  help(ctx):
- des = """
- Comandos disponibles:\n
- > Prefijo:  `;`\n
- > help: Muestra este panel de ayuda\n
- > ping: El bot te dice cuanto tarda en procesar el pong\n
- > restart: Reinicia el bot, hace falta tener el rol <@&735506792494399638>\n
- Hecho en Python\n
- """
- name='Lista de comandos'
- color=discord.Color.blue()
- await embed(ctx, des, color, name)
-
-
+async def help(ctx):
+    des = """
+    Comandos disponibles:\n
+    > Prefijo:  `;`\n
+    > help: Muestra este panel de ayuda\n
+    > ping: El bot te dice cuanto tarda en procesar el pong\n
+    > restart: Reinicia el bot, hace falta tener el rol <@&735506792494399638>\n
+    Hecho en Python\n
+    """
+    name='Lista de comandos'
+    color=discord.Color.blue()
+    await embed(ctx, des, color, name)
 
 @bot.command(description='Reinicia el bot')
 @commands.has_role(735506792494399638)
 async def restart(ctx):
- des = "Reiniciando el bot."
- name = 'Reiniciando...'
- color=discord.Color.gold()
- await embed(ctx, des, color, name, delete=0.1)
- sleep(1.0)
- des = f"{ctx.message.author.mention} me ha reiniciado."
- name = 'Bot reiniciado.'
- color=discord.Color.green()
- await embed(ctx, des, color, name)
- os.execv("X:/cositas/Proyectos/bot/venv/Scripts/python.exe", ["python"] + ["x:/cositas/Proyectos/bot/main.py"])
+    des = "Reiniciando el bot."
+    name = 'Reiniciando...'
+    color=discord.Color.gold()
+    await embed(ctx, des, color, name, delete=0.01)
+    sleep(0.1)
+    des = f"{ctx.message.author.mention} me ha reiniciado."
+    name = 'Bot reiniciado.'
+    color=discord.Color.green()
+    await embed(ctx, des, color, name)
+    os.execv("X:/cositas/Proyectos/bot/venv/Scripts/python.exe", ["python"] + ["x:/cositas/Proyectos/bot/main.py"])
 
 @restart.error
 async def restart_error(ctx, error):
@@ -89,6 +87,7 @@ async def on_application_command(ctx):
 async def on_ready():
     print(f'Te has logeado como {bot.user}')
     # 'Watching' status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Bioshock: The Collection gratis en Epic Games"))
+    name = "Bioshock: The Collection gratis en Epic Games"
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=name))
 
 bot.run(keys.token)
