@@ -1,48 +1,94 @@
 # bot.py
-from http import client
 import discord
 import os
 from discord.ext import commands
 import datetime
 import pytz
+import keys
+from time import sleep
+
 
 madrid = pytz.timezone("Europe/Madrid")
-TOKEN = os.getenv('token')
 
 bot = commands.Bot(command_prefix=';', description='Bot prueba v2', help_command=None)
 
-#Ver cuanto ping tiene el bot
-@bot.command(
-    help="Vemos el ping del bot",
-    brief="Vemos el ping del bot"
-)
+#Funcion para mandar el embed
+async def embed(ctx, des, color, name, delete=0.0):
+    embed = discord.Embed(description= des,
+    timestamp=datetime.datetime.now(tz=madrid),
+    color= color)
+    embed.set_footer(text="Solicitado por: {}".format(ctx.author.name), icon_url=ctx.author.avatar_url)
+    embed.set_author(name= name)
+   #  Sale la foto en grande en una esquina
+   #  embed.set_thumbnail(url=ctx.author.avatar_url)
+
+    if delete == 0.0:
+     await ctx.send(embed=embed)
+    else:
+     await ctx.send(embed=embed, delete_after=delete)
+
+@bot.command(description='Muestra el ping que tiene el bot con los servidores de Discord')
 async def ping(ctx):
-    await ctx.send(f'Pong en {round(bot.latency * 1000)}ms')
+    ping = round(bot.latency * 1000)
+    name = 'Ping!'
+    des = f'`Pong! en {ping}ms`'
+    if ping <= 60:
+     color = discord.Color.green()
+    if ping >= 61 and ping <=120:
+     color = discord.Color.gold()
+    if ping > 120:
+     color = discord.Color.red()    
+    await embed(ctx, des, color, name)
 
-@bot.command()
+@bot.command(description='Muestra los comandos del bot')
 async  def  help(ctx):
-  des = """
-  Comandos disponibles:\n
-  > Prefijo:  `;`\n
-  > ping: El bot te dice cuanto tarda en procesar el pong\n
-  Hecho con amor en Python\n
-  """
-  embed = discord.Embed(title="Bot en pruebas",url="https://cdn.discordapp.com/avatars/185405355117903873/2133ec67021514b0bb0de712d88f5950.webp?size=1024",description= des,
-  timestamp=datetime.datetime.now(),
-  color=discord.Color.blue())
-  embed.set_footer(text="solicitado por: {}".format(ctx.author.name))
-  embed.set_author(name="erAbsolute",
-  icon_url="https://cdn.discordapp.com/avatars/185405355117903873/2133ec67021514b0bb0de712d88f5950.webp?size=1024")
+ des = """
+ Comandos disponibles:\n
+ > Prefijo:  `;`\n
+ > help: Muestra este panel de ayuda\n
+ > ping: El bot te dice cuanto tarda en procesar el pong\n
+ > restart: Reinicia el bot, hace falta tener el rol <@&735506792494399638>\n
+ Hecho en Python\n
+ """
+ name='Lista de comandos'
+ color=discord.Color.blue()
+ await embed(ctx, des, color, name)
 
 
-  await ctx.send(embed=embed)
 
+@bot.command(description='Reinicia el bot')
+@commands.has_role(735506792494399638)
+async def restart(ctx):
+ des = "Reiniciando el bot."
+ name = 'Reiniciando...'
+ color=discord.Color.gold()
+ await embed(ctx, des, color, name, delete=0.1)
+ sleep(1.0)
+ des = f"{ctx.message.author.mention} me ha reiniciado."
+ name = 'Bot reiniciado.'
+ color=discord.Color.green()
+ await embed(ctx, des, color, name)
+ os.execv("X:/cositas/Proyectos/bot/venv/Scripts/python.exe", ["python"] + ["x:/cositas/Proyectos/bot/main.py"])
 
+@restart.error
+async def restart_error(ctx, error):
+    des = "Necesitas el rol <@&735506792494399638> para reiniciar el bot"
+    color=discord.Color.red()
+    name='Fallo al reiniciar'
+    await embed(ctx, des, color, name)
+
+@bot.event
+async def on_command(ctx):
+    await ctx.message.delete()
+
+@bot.event
+async def on_application_command(ctx):
+    await ctx.message.delete()
 
 @bot.event
 async def on_ready():
     print(f'Te has logeado como {bot.user}')
     # 'Watching' status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="a movie"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Bioshock: The Collection gratis en Epic Games"))
 
-bot.run(TOKEN)
+bot.run(keys.token)
