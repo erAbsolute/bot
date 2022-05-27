@@ -4,7 +4,7 @@ import os
 from discord.ext import commands
 import datetime
 import pytz
-import keys
+import secrets
 from time import sleep
 
 
@@ -66,7 +66,7 @@ async def restart(ctx):
     name = 'Bot reiniciado.'
     color=discord.Color.green()
     await embed(ctx, des, color, name)
-    os.execv("X:/cositas/Proyectos/bot/venv/Scripts/python.exe", ["python"] + ["x:/cositas/Proyectos/bot/main.py"])
+    os.execv(secrets.path_python, ["python"] + [secrets.path_main])
 
 @restart.error
 async def restart_error(ctx, error):
@@ -90,4 +90,4 @@ async def on_ready():
     name = "Bioshock: The Collection gratis en Epic Games"
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=name))
 
-bot.run(keys.token)
+bot.run(secrets.token)
