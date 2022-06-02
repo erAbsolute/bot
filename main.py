@@ -1,4 +1,5 @@
 # bot.py
+import asyncio
 import discord
 import os
 from discord.ext import commands
@@ -7,8 +8,6 @@ import datetime
 import pytz
 from secrets import token, path_main, path_python
 from time import sleep
-from discord.utils import get
-
 
 madrid = pytz.timezone("Europe/Madrid")
 #As of PyCord beta 5 (which uses API v10), specifying the message content intent will be required for receiving message content.
@@ -28,7 +27,6 @@ async def embed(ctx, des, color, name, delete=0):
     e.set_author(name= name)
    #  Sale la foto en grande en una esquina
    #  embed.set_thumbnail(url=ctx.author.avatar_url)
-
     if delete == 0:
      await ctx.send(embed=e)
     else:
@@ -78,7 +76,6 @@ async def restart(ctx):
     os.execv(path_python, ["python"] + [path_main])
 
 @bot.bridge_command(name="mostrarinfo", description="Muestra la información del usuario")
-#@option()
 async def info(ctx, user: discord.Member = None):
     user = user or ctx.author  # if no user is provided it'll use the the author of the message
     e = discord.Embed(timestamp=datetime.datetime.now(tz=madrid))
@@ -89,12 +86,12 @@ async def info(ctx, user: discord.Member = None):
     e.add_field(
         name="Se unió en:",
         value=discord.utils.format_dt(user.joined_at, "F"),
-        inline=False,
+        inline=True,
     )
     e.add_field(
         name="Creado en:",
         value=discord.utils.format_dt(user.created_at, "F"),
-        inline=False,
+        inline=True,
     )   # When the user's account was created
     e.set_footer(text="Solicitado por: {}".format(str(ctx.author)), icon_url=ctx.author.avatar)
     colour = user.colour
@@ -104,9 +101,20 @@ async def info(ctx, user: discord.Member = None):
     if isinstance(user, discord.User):  # checks if the user in the server
         e.set_footer(text="Este miembro no está en este servidor.")
 
-    if user.nick is not str:
+    if user.nick is not None:
         e.set_author(name=str(user)+' AKA '+user.nick) 
     await ctx.respond(embed=e)  # sends the embed
+
+@bot.bridge_command(name="limpiar", description="Limpia la cantidad de mensajes que le digas")
+@commands.has_permissions()
+async def clear(ctx, number):
+    number = int(number) #Converting the amount of messages to delete to an integer
+    counter = 0
+    async for x in bot.logs_from(ctx.message.channel, limit = number):
+        if counter < number:
+            await bot.delete_message(x)
+            counter += 1
+            await asyncio.sleep(1.2) #1.2 second timer so the deleting process can be even
 
 #@restart.error
 #async def restart_error(ctx, error):
@@ -138,7 +146,7 @@ async def on_command_error(ctx, error):
      des = f"Error: {error}"
      color=discord.Color.red()
      name=f'Fallo con el comando {ctx}'
-     await embed(ctx, des, color, name) 
+     await embed(ctx, des, color, name)
 
 @bot.event
 async def on_application_command_error(ctx, error):
@@ -159,5 +167,5 @@ async def on_ready():
     print(f'Te has logeado como {bot.user}')
     # 'Watching' status
     name = "Bioshock: The Collection gratis en Epic Games"
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=name))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=name),status='streaming')
 bot.run(token)
