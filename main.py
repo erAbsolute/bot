@@ -2,8 +2,7 @@
 import asyncio
 import discord
 import os
-from discord.ext import commands
-from discord.ext import bridge
+from discord.ext import commands, bridge
 import datetime
 import pytz
 from secrets import token, path_main, path_python
